@@ -1,382 +1,807 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personal Expense Tracker</title>
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #ec4899;
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --input-bg: #0f172a;
-      --border: #334155;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Queen Asantewaa's Expense Tracker</title>
+    
+    <!-- PWA / Mobile Metas -->
+    <meta name="theme-color" content="#ffffff" id="theme-color-meta">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Asantewaa Expenses">
+    <meta name="application-name" content="Asantewaa Expenses">
+    <meta name="description" content="Personal expense tracker created specially for Asantewaa My Queen">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        queen: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            gold: '#d97706',
+                            goldlight: '#fef3c7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Pie Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background-color: var(--bg-color);
-      min-height: 100vh;
-    }
-
-    /* Screen Transitions */
-    .screen {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      padding: 24px;
-      animation: fadeIn 0.4s ease-in-out forwards;
-    }
-
-    .screen.active {
-      display: flex;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Onboarding Screen */
-    .onboard-content {
-      margin: auto 0;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .onboard-title {
-      font-size: 28px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .onboard-subtitle {
-      color: var(--text-sub);
-      text-align: center;
-      font-size: 14px;
-      margin-bottom: 12px;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    label {
-      font-size: 14px;
-      color: var(--text-sub);
-    }
-
-    input, select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background-color: var(--input-bg);
-      color: var(--text-main);
-      font-size: 16px;
-      outline: none;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--accent);
-    }
-
-    .btn {
-      padding: 16px;
-      border-radius: 12px;
-      border: none;
-      background-color: var(--accent);
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.1s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    /* Home & App Elements */
-    .header {
-      padding: 24px 0 12px 0;
-    }
-
-    .greeting {
-      font-size: 22px;
-      font-weight: 700;
-      line-height: 1.3;
-    }
-
-    .balance-card {
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      padding: 20px;
-      margin: 16px 0;
-      border: 1px solid var(--border);
-    }
-
-    .balance-label {
-      font-size: 13px;
-      color: var(--text-sub);
-    }
-
-    .balance-amount {
-      font-size: 32px;
-      font-weight: 800;
-      margin-top: 4px;
-    }
-
-    .add-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background-color: var(--card-bg);
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      margin-bottom: 20px;
-    }
-
-    .expense-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 80px;
-    }
-
-    .expense-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: var(--card-bg);
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .expense-info h4 {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .expense-info p {
-      font-size: 12px;
-      color: var(--text-sub);
-    }
-
-    .expense-amount {
-      font-weight: 700;
-      color: #f43f5e;
-    }
-
-    /* Bottom Navigation */
-    .nav-bar {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      height: 64px;
-      background-color: var(--card-bg);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .nav-item {
-      color: var(--text-sub);
-      font-size: 12px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .nav-item.active {
-      color: var(--accent);
-      font-weight: 600;
-    }
-  </style>
+    <style>
+        /* Custom scrollbar & smooth transitions */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* PWA Manifest inline simulation via Blob/JS or standard data uri */
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 min-h-screen pb-24 font-sans transition-colors duration-200">
 
-  <div class="app-container">
+    <!-- Dynamic Manifest Link Creation -->
+    <script>
+        const manifestJson = {
+            "name": "Asantewaa Expenses",
+            "short_name": "Asantewaa",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#f43f5e",
+            "icons": [
+                {
+                    "src": "https://img.icons8.com/emoji/192/000000/crown-emoji.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "https://img.icons8.com/emoji/512/000000/crown-emoji.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+        const stringManifest = JSON.stringify(manifestJson);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestURL;
+        document.head.appendChild(manifestLink);
+    </script>
 
-    <!-- Screen 1: Onboarding Setup (Only for first-time users) -->
-    <div id="onboardScreen" class="screen">
-      <div class="onboard-content">
-        <h1 class="onboard-title">Welcome! ✨</h1>
-        <p class="onboard-subtitle">Let's set up your profile to personalize your experience.</p>
-        
-        <div class="input-group">
-          <label for="userName">Your Name</label>
-          <input type="text" id="userName" placeholder="Enter your name..." />
+    <!-- Top Bar / App Banner -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span class="p-2 bg-rose-100 dark:bg-rose-950/60 rounded-full text-queen-500 dark:text-queen-400">
+                <i class="fa-solid font-bold text-lg fa-crown"></i>
+            </span>
+            <div>
+                <h1 class="font-bold text-base tracking-tight leading-none text-gray-900 dark:text-white">Asantewaa App</h1>
+                <p class="text-[11px] text-gray-500 dark:text-slate-400 font-medium">Personal Finance</p>
+            </div>
         </div>
 
-        <div class="input-group">
-          <label for="userGender">Title Choice</label>
-          <select id="userGender">
-            <option value="female">Female (Queen)</option>
-            <option value="male">Male (King)</option>
-          </select>
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleSamsungGuide()" class="text-xs bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 px-2.5 py-1.5 rounded-full flex items-center space-x-1 font-medium transition active:scale-95">
+                <i class="fa-solid fa-mobile-screen-button text-amber-500"></i>
+                <span>Add to Phone</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 pt-4 pb-8">
+
+        <!-- Samsung / Android Installation Modal -->
+        <div id="samsungGuideModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-gray-100 dark:border-slate-700 space-y-4 animate-bounce-in">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center space-x-2 text-rose-500 dark:text-rose-400">
+                        <i class="fa-solid fa-bookmark text-xl"></i>
+                        <h3 class="font-bold text-lg text-gray-900 dark:text-white">Save to Samsung Screen</h3>
+                    </div>
+                    <button onclick="toggleSamsungGuide()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
+                    Follow these easy steps on your <strong class="text-gray-900 dark:text-white">Samsung Phone</strong> to keep this app on your home screen like a real app:
+                </p>
+
+                <div class="space-y-3 text-xs">
+                    <div class="p-3 bg-rose-50/60 dark:bg-slate-700/50 rounded-2xl flex items-start space-x-3">
+                        <div class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                        <div>
+                            <p class="font-semibold text-gray-800 dark:text-slate-100">Samsung Internet Browser:</p>
+                            <p class="text-gray-500 dark:text-slate-400">Tap the <i class="fa-solid fa-bars text-gray-700 dark:text-slate-200 mx-0.5"></i> menu icon at bottom right &rarr; tap <strong>"+ Add page to"</strong> &rarr; select <strong>"Home screen"</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-amber-50/60 dark:bg-slate-700/50 rounded-2xl flex items-start space-x-3">
+                        <div class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                        <div>
+                            <p class="font-semibold text-gray-800 dark:text-slate-100">Google Chrome:</p>
+                            <p class="text-gray-500 dark:text-slate-400">Tap the <i class="fa-solid fa-ellipsis-vertical text-gray-700 dark:text-slate-200 mx-0.5"></i> three dots at top right &rarr; tap <strong>"Add to Home screen"</strong> or <strong>"Install App"</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="toggleSamsungGuide()" class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-medium text-sm transition shadow-lg shadow-rose-200 dark:shadow-none">
+                    Got it, My Queen! 💕
+                </button>
+            </div>
         </div>
 
-        <button class="btn" onclick="saveProfile()">Get Started</button>
-      </div>
-    </div>
+        <!-- TAB 1: HOME -->
+        <div id="tab-home" class="tab-content active space-y-5">
+            <!-- Greeting Banner -->
+            <div class="bg-gradient-to-r from-rose-500 via-rose-400 to-pink-500 rounded-3xl p-5 text-white shadow-xl shadow-rose-100 dark:shadow-none relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 opacity-15 text-7xl font-bold">👑</div>
+                <p class="text-rose-100 text-xs font-medium tracking-wide uppercase">Welcome back</p>
+                <h2 class="text-xl font-extrabold mt-1 leading-tight">
+                    Hello Asantewaa My Queen, how are you doing today? 👑
+                </h2>
+                <p class="text-xs text-rose-100/90 mt-2 flex items-center gap-1">
+                    <i class="fa-regular fa-heart"></i> Ready to manage our expenses smoothly!
+                </p>
+            </div>
 
-    <!-- Screen 2: Main Home Screen -->
-    <div id="homeScreen" class="screen">
-      <div class="header">
-        <h2 id="greetingText" class="greeting">Hello!</h2>
-      </div>
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm">
+                    <div class="flex items-center space-x-2 text-rose-500 dark:text-rose-400 mb-1">
+                        <i class="fa-solid fa-calendar-day text-xs"></i>
+                        <span class="text-xs font-medium text-gray-500 dark:text-slate-400">Today's Spent</span>
+                    </div>
+                    <div id="summaryToday" class="text-xl font-extrabold text-gray-900 dark:text-white">GH₵ 0.00</div>
+                    <div id="todayCount" class="text-[11px] text-gray-400 dark:text-slate-500 mt-1">0 transactions</div>
+                </div>
 
-      <div class="balance-card">
-        <div class="balance-label">Total Spent</div>
-        <div class="balance-amount" id="totalSpent">$0.00</div>
-      </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm">
+                    <div class="flex items-center space-x-2 text-amber-500 dark:text-amber-400 mb-1">
+                        <i class="fa-solid fa-wallet text-xs"></i>
+                        <span class="text-xs font-medium text-gray-500 dark:text-slate-400">This Month</span>
+                    </div>
+                    <div id="summaryMonth" class="text-xl font-extrabold text-gray-900 dark:text-white">GH₵ 0.00</div>
+                    <div id="monthCount" class="text-[11px] text-gray-400 dark:text-slate-500 mt-1">0 transactions</div>
+                </div>
+            </div>
 
-      <form class="add-form" id="expenseForm" onsubmit="addExpense(event)">
-        <input type="text" id="descInput" placeholder="Expense description..." required />
-        <input type="number" id="amountInput" placeholder="Amount ($)" step="0.01" required />
-        <button type="submit" class="btn">Add Expense</button>
-      </form>
+            <!-- Add Expense Form -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-500 flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </span>
+                        Add New Expense
+                    </h3>
+                </div>
 
-      <h3 style="margin-bottom: 12px; font-size: 16px;">Recent Expenses</h3>
-      <div id="expenseList" class="expense-list"></div>
+                <form id="expenseForm" onsubmit="handleAddExpense(event)" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Amount (GH₵)</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 font-bold text-sm">GH₵</span>
+                            <input type="number" id="expAmount" step="0.01" min="0.01" placeholder="0.00" required
+                                class="w-full pl-14 pr-4 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white font-semibold text-base transition">
+                        </div>
+                    </div>
 
-      <!-- Bottom Nav -->
-      <nav class="nav-bar">
-        <button class="nav-item active">Home</button>
-        <button class="nav-item" onclick="resetProfile()" style="color: #ef4444;">Reset</button>
-      </nav>
-    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Category</label>
+                            <select id="expCategory" required
+                                class="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white text-xs font-medium transition">
+                                <option value="Food">🍔 Food</option>
+                                <option value="Airtime">📱 Airtime & Data</option>
+                                <option value="Transportation">🚗 Transportation</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Others">✨ Others</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Date</label>
+                            <input type="date" id="expDate" required
+                                class="w-full px-3 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white text-xs transition">
+                        </div>
+                    </div>
 
-  </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Note / Reason (Optional)</label>
+                        <input type="text" id="expNote" placeholder="e.g. Lunch with friends, MoMo airtime..."
+                            class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white text-xs transition">
+                    </div>
 
-  <script>
-    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+                    <button type="submit"
+                        class="w-full py-3 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white rounded-2xl font-semibold text-sm transition-all shadow-md shadow-rose-200 dark:shadow-none flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Save Expense</span>
+                    </button>
+                </form>
+            </div>
 
-    // App Initialization
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedName = localStorage.getItem('user_name');
-      const savedGender = localStorage.getItem('user_gender');
+            <!-- Today's Transaction List -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="font-bold text-gray-800 dark:text-slate-200 text-sm">Today's Transactions</h3>
+                    <span class="text-xs text-rose-500 font-medium" id="todayHeaderDate">Today</span>
+                </div>
 
-      if (!savedName || !savedGender) {
-        showScreen('onboardScreen');
-      } else {
-        loadHomeScreen(savedName, savedGender);
-      }
-    });
+                <div id="todayExpenseList" class="space-y-2.5">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
+        </div>
 
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
-    }
+        <!-- TAB 2: PIE CHART / ANALYTICS -->
+        <div id="tab-analytics" class="tab-content space-y-5">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-bold text-base text-gray-900 dark:text-white">Spending Analytics</h2>
+                        <p class="text-xs text-gray-400 dark:text-slate-400">Category breakdown chart</p>
+                    </div>
 
-    function saveProfile() {
-      const name = document.getElementById('userName').value.trim();
-      const gender = document.getElementById('userGender').value;
+                    <!-- Date Filter -->
+                    <select id="analyticsFilter" onchange="renderAnalytics()"
+                        class="px-3 py-1.5 bg-gray-100 dark:bg-slate-700 border-none rounded-xl text-xs font-semibold text-gray-700 dark:text-slate-200 focus:outline-none">
+                        <option value="month">This Month</option>
+                        <option value="7days">Past 7 Days</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
 
-      if (!name) {
-        alert('Please enter your name.');
-        return;
-      }
+                <!-- Chart container -->
+                <div class="relative w-full h-60 flex items-center justify-center py-2">
+                    <canvas id="expensePieChart"></canvas>
+                    <div id="noChartData" class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
+                        <i class="fa-solid fa-chart-pie text-4xl mb-2 opacity-50"></i>
+                        <p class="text-xs font-medium">No expenses found for this period</p>
+                    </div>
+                </div>
 
-      localStorage.setItem('user_name', name);
-      localStorage.setItem('user_gender', gender);
+                <!-- Stats summary badges -->
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100 dark:border-slate-700/60">
+                    <div class="p-2.5 bg-gray-50 dark:bg-slate-900/60 rounded-2xl text-center">
+                        <span class="text-[11px] text-gray-400 dark:text-slate-400 block">Top Category</span>
+                        <span id="statTopCategory" class="text-xs font-bold text-gray-800 dark:text-slate-100">-</span>
+                    </div>
+                    <div class="p-2.5 bg-gray-50 dark:bg-slate-900/60 rounded-2xl text-center">
+                        <span class="text-[11px] text-gray-400 dark:text-slate-400 block">Total Period Spent</span>
+                        <span id="statTotalPeriod" class="text-xs font-bold text-rose-500 dark:text-rose-400">GH₵ 0.00</span>
+                    </div>
+                </div>
+            </div>
 
-      loadHomeScreen(name, gender);
-    }
+            <!-- Category Breakdown List -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm space-y-3">
+                <h3 class="font-bold text-gray-900 dark:text-white text-sm">Category Details</h3>
+                <div id="categoryBreakdownList" class="space-y-3">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
+        </div>
 
-    function loadHomeScreen(name, gender) {
-      const title = gender === 'male' ? 'my king' : 'my queen';
-      document.getElementById('greetingText').innerText = `Hello ${name} ${title}, how are you doing?`;
-      
-      showScreen('homeScreen');
-      renderExpenses();
-    }
+        <!-- TAB 3: PROFILE & SETTINGS -->
+        <div id="tab-profile" class="tab-content space-y-5">
+            <!-- Queen Profile Card -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm text-center relative overflow-hidden">
+                <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-rose-400 to-amber-300 p-1 shadow-lg shadow-rose-200 dark:shadow-none mb-3">
+                    <div class="w-full h-full rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-rose-500 text-3xl">
+                        👑
+                    </div>
+                </div>
+                <h2 class="font-extrabold text-lg text-gray-900 dark:text-white">Asantewaa</h2>
+                <p class="text-xs text-rose-500 dark:text-rose-400 font-semibold mt-0.5">My Queen 💖</p>
+                <div class="mt-3 inline-block px-3 py-1 bg-rose-50 dark:bg-rose-950/50 rounded-full text-[11px] text-rose-600 dark:text-rose-300">
+                    Personal Expense Space
+                </div>
+            </div>
 
-    function addExpense(e) {
-      e.preventDefault();
-      const desc = document.getElementById('descInput').value;
-      const amount = parseFloat(document.getElementById('amountInput').value);
+            <!-- Romantic Note Box -->
+            <div class="bg-gradient-to-r from-amber-50 to-rose-50 dark:from-slate-800 dark:to-slate-800 p-4 rounded-3xl border border-amber-200/60 dark:border-slate-700 text-xs text-amber-900 dark:text-amber-200 space-y-1.5 shadow-sm">
+                <div class="flex items-center space-x-1.5 font-bold text-amber-700 dark:text-amber-300">
+                    <i class="fa-solid fa-heart text-rose-500"></i>
+                    <span>Special Note For You</span>
+                </div>
+                <p class="italic leading-relaxed">
+                    "Track every cedi with ease, My Queen. You deserve the sweetest, smoothest app experience every day!"
+                </p>
+            </div>
 
-      if (desc && amount) {
-        expenses.unshift({ id: Date.now(), desc, amount });
-        localStorage.setItem('expenses', JSON.stringify(expenses));
-        document.getElementById('descInput').value = '';
-        document.getElementById('amountInput').value = '';
-        renderExpenses();
-      }
-    }
+            <!-- Settings Options -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700/60 shadow-sm overflow-hidden divide-y divide-gray-100 dark:divide-slate-700/60">
+                <!-- Theme Switcher -->
+                <div class="p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-moon"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white block">Dark Appearance</span>
+                            <span class="text-[11px] text-gray-400 dark:text-slate-400">Toggle dark / white theme</span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="themeToggle" onchange="toggleTheme()" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:peer-focus:ring-slate-800 peer-checked:bg-rose-500"></div>
+                    </label>
+                </div>
 
-    function renderExpenses() {
-      const listEl = document.getElementById('expenseList');
-      const totalEl = document.getElementById('totalSpent');
-      
-      listEl.innerHTML = '';
-      let total = 0;
+                <!-- Export Data -->
+                <button onclick="exportData()" class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-700/40 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-file-export"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white block">Export Data</span>
+                            <span class="text-[11px] text-gray-400 dark:text-slate-400">Download backup file (JSON)</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-300 dark:text-slate-600"></i>
+                </button>
 
-      expenses.forEach(item => {
-        total += item.amount;
-        const div = document.createElement('div');
-        div.className = 'expense-item';
-        div.innerHTML = `
-          <div class="expense-info">
-            <h4>${item.desc}</h4>
-          </div>
-          <div class="expense-amount">-$${item.amount.toFixed(2)}</div>
-        `;
-        listEl.appendChild(div);
-      });
+                <!-- Clear Data -->
+                <button onclick="confirmClearData()" class="w-full p-4 flex items-center justify-between text-left hover:bg-rose-50/50 dark:hover:bg-rose-950/30 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-500 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-rose-600 dark:text-rose-400 block">Clear All Records</span>
+                            <span class="text-[11px] text-gray-400 dark:text-slate-400">Reset saved expenses</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-300 dark:text-slate-600"></i>
+                </button>
+            </div>
+        </div>
 
-      totalEl.innerText = `$${total.toFixed(2)}`;
-    }
+    </main>
 
-    function resetProfile() {
-      if (confirm('Are you sure you want to reset user info?')) {
-        localStorage.removeItem('user_name');
-        localStorage.removeItem('user_gender');
-        location.reload();
-      }
-    }
-  </script>
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 z-40 max-w-md mx-auto">
+        <div class="grid grid-cols-3 py-2 px-3">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-item active flex flex-col items-center py-1.5 text-rose-500 dark:text-rose-400">
+                <i class="fa-solid fa-house text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-item flex flex-col items-center py-1.5 text-gray-400 dark:text-slate-500">
+                <i class="fa-solid fa-chart-pie text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Analytics</span>
+            </button>
+
+            <button onclick="switchTab('profile')" id="nav-profile" class="nav-item flex flex-col items-center py-1.5 text-gray-400 dark:text-slate-500">
+                <i class="fa-solid fa-user text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Category Icons & Color Mapping
+        const CATEGORY_MAP = {
+            'Food': { icon: 'fa-burger', bg: 'bg-amber-100 dark:bg-amber-950/80', text: 'text-amber-600 dark:text-amber-400', color: '#f59e0b' },
+            'Airtime': { icon: 'fa-mobile-retro', bg: 'bg-blue-100 dark:bg-blue-950/80', text: 'text-blue-600 dark:text-blue-400', color: '#3b82f6' },
+            'Transportation': { icon: 'fa-car', bg: 'bg-emerald-100 dark:bg-emerald-950/80', text: 'text-emerald-600 dark:text-emerald-400', color: '#10b981' },
+            'Shopping': { icon: 'fa-bag-shopping', bg: 'bg-purple-100 dark:bg-purple-950/80', text: 'text-purple-600 dark:text-purple-400', color: '#a855f7' },
+            'Entertainment': { icon: 'fa-film', bg: 'bg-pink-100 dark:bg-pink-950/80', text: 'text-pink-600 dark:text-pink-400', color: '#ec4899' },
+            'Others': { icon: 'fa-sparkles', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300', color: '#64748b' }
+        };
+
+        // App State Variables
+        let expenses = [];
+        let pieChart = null;
+
+        // On Load Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExpenses();
+            loadTheme();
+            setTodayDateDefault();
+            renderHomeTab();
+        });
+
+        // Date String Helper (YYYY-MM-DD)
+        function getTodayString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function setTodayDateDefault() {
+            document.getElementById('expDate').value = getTodayString();
+        }
+
+        // LocalStorage Logic
+        function loadExpenses() {
+            const saved = localStorage.getItem('asantewaa_expenses');
+            if (saved) {
+                try {
+                    expenses = JSON.parse(saved);
+                } catch (e) {
+                    expenses = [];
+                }
+            } else {
+                // Initial Sample Demo Data for Asantewaa
+                expenses = [
+                    { id: '1', amount: 25.00, category: 'Food', note: 'Delicious Lunch', date: getTodayString(), timestamp: Date.now() - 3600000 },
+                    { id: '2', amount: 15.00, category: 'Airtime', note: 'MTN Data Bundle', date: getTodayString(), timestamp: Date.now() - 7200000 }
+                ];
+                saveExpenses();
+            }
+        }
+
+        function saveExpenses() {
+            localStorage.setItem('asantewaa_expenses', JSON.stringify(expenses));
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('text-rose-500', 'dark:text-rose-400');
+                el.classList.add('text-gray-400', 'dark:text-slate-500');
+            });
+
+            // Show selected content
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            activeNav.classList.remove('text-gray-400', 'dark:text-slate-500');
+            activeNav.classList.add('text-rose-500', 'dark:text-rose-400');
+
+            if (tabName === 'analytics') {
+                renderAnalytics();
+            } else if (tabName === 'home') {
+                renderHomeTab();
+            }
+        }
+
+        // Add Expense Function
+        function handleAddExpense(event) {
+            event.preventDefault();
+
+            const amountInput = document.getElementById('expAmount');
+            const categoryInput = document.getElementById('expCategory');
+            const dateInput = document.getElementById('expDate');
+            const noteInput = document.getElementById('expNote');
+
+            const newExp = {
+                id: Date.now().toString(),
+                amount: parseFloat(amountInput.value),
+                category: categoryInput.value,
+                date: dateInput.value,
+                note: noteInput.value.trim(),
+                timestamp: Date.now()
+            };
+
+            expenses.unshift(newExp);
+            saveExpenses();
+
+            // Reset Form
+            amountInput.value = '';
+            noteInput.value = '';
+            setTodayDateDefault();
+
+            renderHomeTab();
+        }
+
+        // Delete Expense
+        function deleteExpense(id) {
+            expenses = expenses.filter(item => item.id !== id);
+            saveExpenses();
+            renderHomeTab();
+            if (document.getElementById('tab-analytics').classList.contains('active')) {
+                renderAnalytics();
+            }
+        }
+
+        // Render Home Tab UI
+        function renderHomeTab() {
+            const todayStr = getTodayString();
+            const currentMonthStr = todayStr.substring(0, 7); // YYYY-MM
+
+            let todayTotal = 0;
+            let todayCount = 0;
+            let monthTotal = 0;
+            let monthCount = 0;
+
+            const todayListEl = document.getElementById('todayExpenseList');
+            todayListEl.innerHTML = '';
+
+            const todayExpenses = [];
+
+            expenses.forEach(item => {
+                // Monthly summary sum
+                if (item.date && item.date.startsWith(currentMonthStr)) {
+                    monthTotal += item.amount;
+                    monthCount++;
+                }
+
+                // Today summary sum
+                if (item.date === todayStr) {
+                    todayTotal += item.amount;
+                    todayCount++;
+                    todayExpenses.push(item);
+                }
+            });
+
+            // Update Summaries
+            document.getElementById('summaryToday').textContent = `GH₵ ${todayTotal.toFixed(2)}`;
+            document.getElementById('todayCount').textContent = `${todayCount} item${todayCount !== 1 ? 's' : ''}`;
+
+            document.getElementById('summaryMonth').textContent = `GH₵ ${monthTotal.toFixed(2)}`;
+            document.getElementById('monthCount').textContent = `${monthCount} item${monthCount !== 1 ? 's' : ''}`;
+
+            // Format Today's Date header display
+            const todayObj = new Date();
+            const dateFormatted = todayObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('todayHeaderDate').textContent = dateFormatted;
+
+            // Render Today's Items
+            if (todayExpenses.length === 0) {
+                todayListEl.innerHTML = `
+                    <div class="text-center py-8 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-200 dark:border-slate-700">
+                        <i class="fa-solid fa-receipt text-3xl text-gray-300 dark:text-slate-600 mb-2"></i>
+                        <p class="text-xs text-gray-400 dark:text-slate-400 font-medium">No expenses logged for today yet!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            todayExpenses.forEach(exp => {
+                const catData = CATEGORY_MAP[exp.category] || CATEGORY_MAP['Others'];
+                const itemEl = document.createElement('div');
+                itemEl.className = 'bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-gray-100 dark:border-slate-700/60 shadow-sm flex items-center justify-between transition hover:border-gray-200';
+
+                itemEl.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-2xl ${catData.bg} ${catData.text} flex items-center justify-center text-sm shrink-0">
+                            <i class="fa-solid ${catData.icon}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-gray-900 dark:text-white">${exp.category}</h4>
+                            <p class="text-[11px] text-gray-500 dark:text-slate-400 line-clamp-1">${exp.note ? exp.note : 'No reason specified'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="font-extrabold text-sm text-gray-900 dark:text-white">GH₵ ${exp.amount.toFixed(2)}</span>
+                        <button onclick="deleteExpense('${exp.id}')" class="text-gray-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400 p-1 transition">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                todayListEl.appendChild(itemEl);
+            });
+        }
+
+        // Filter and Render Analytics / Pie Chart Tab
+        function renderAnalytics() {
+            const filterValue = document.getElementById('analyticsFilter').value;
+            const today = new Date();
+            const todayStr = getTodayString();
+            const monthStr = todayStr.substring(0, 7);
+
+            let filtered = [];
+
+            if (filterValue === 'month') {
+                filtered = expenses.filter(e => e.date && e.date.startsWith(monthStr));
+            } else if (filterValue === '7days') {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                filtered = expenses.filter(e => new Date(e.date) >= sevenDaysAgo);
+            } else { // 'all'
+                filtered = [...expenses];
+            }
+
+            // Category Totals Computation
+            const categorySums = {};
+            let totalPeriod = 0;
+
+            filtered.forEach(exp => {
+                const cat = exp.category || 'Others';
+                categorySums[cat] = (categorySums[cat] || 0) + exp.amount;
+                totalPeriod += exp.amount;
+            });
+
+            document.getElementById('statTotalPeriod').textContent = `GH₵ ${totalPeriod.toFixed(2)}`;
+
+            const labels = Object.keys(categorySums);
+            const dataValues = Object.values(categorySums);
+
+            // Determine highest spending category
+            let topCat = '-';
+            let maxVal = 0;
+            for (const [cat, val] of Object.entries(categorySums)) {
+                if (val > maxVal) {
+                    maxVal = val;
+                    topCat = cat;
+                }
+            }
+            document.getElementById('statTopCategory').textContent = topCat;
+
+            // Render Chart
+            const canvas = document.getElementById('expensePieChart');
+            const noDataEl = document.getElementById('noChartData');
+
+            if (dataValues.length === 0 || totalPeriod === 0) {
+                canvas.style.display = 'none';
+                noDataEl.classList.remove('hidden');
+                document.getElementById('categoryBreakdownList').innerHTML = `
+                    <p class="text-xs text-center text-gray-400 py-4">No records found for this time filter.</p>
+                `;
+                if (pieChart) pieChart.destroy();
+                return;
+            } else {
+                canvas.style.display = 'block';
+                noDataEl.classList.add('hidden');
+            }
+
+            const chartColors = labels.map(l => (CATEGORY_MAP[l] ? CATEGORY_MAP[l].color : '#64748b'));
+
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            const isDark = document.documentElement.classList.contains('dark');
+
+            pieChart = new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: chartColors,
+                        borderWidth: 2,
+                        borderColor: isDark ? '#1e293b' : '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: { size: 11, family: 'Inter' },
+                                color: isDark ? '#94a3b8' : '#475569'
+                            }
+                        }
+                    },
+                    cutout: '68%'
+                }
+            });
+
+            // Render Breakdown List
+            const breakdownListEl = document.getElementById('categoryBreakdownList');
+            breakdownListEl.innerHTML = '';
+
+            // Sort categories by highest spent
+            const sortedCategories = Object.entries(categorySums).sort((a, b) => b[1] - a[1]);
+
+            sortedCategories.forEach(([cat, amount]) => {
+                const catData = CATEGORY_MAP[cat] || CATEGORY_MAP['Others'];
+                const percentage = ((amount / totalPeriod) * 100).toFixed(1);
+
+                const item = document.createElement('div');
+                item.className = 'space-y-1';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-xs font-medium">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${catData.color}"></span>
+                            <span class="text-gray-800 dark:text-slate-200 font-semibold">${cat}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-gray-900 dark:text-white font-bold">GH₵ ${amount.toFixed(2)}</span>
+                            <span class="text-[10px] text-gray-400 dark:text-slate-500 ml-1">(${percentage}%)</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full" style="width: ${percentage}%; background-color: ${catData.color}"></div>
+                    </div>
+                `;
+                breakdownListEl.appendChild(item);
+            });
+        }
+
+        // Theme Switcher Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const themeMeta = document.getElementById('theme-color-meta');
+
+            if (themeToggle.checked) {
+                html.classList.add('dark');
+                localStorage.setItem('asantewaa_theme', 'dark');
+                themeMeta.setAttribute('content', '#0f172a');
+            } else {
+                html.classList.remove('dark');
+                localStorage.setItem('asantewaa_theme', 'light');
+                themeMeta.setAttribute('content', '#ffffff');
+            }
+
+            if (pieChart) {
+                renderAnalytics();
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('asantewaa_theme');
+            const themeToggle = document.getElementById('themeToggle');
+            const themeMeta = document.getElementById('theme-color-meta');
+
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeToggle.checked = true;
+                themeMeta.setAttribute('content', '#0f172a');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggle.checked = false;
+                themeMeta.setAttribute('content', '#ffffff');
+            }
+        }
+
+        // Samsung Guide Modal Toggle
+        function toggleSamsungGuide() {
+            const modal = document.getElementById('samsungGuideModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Data Management
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(expenses, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `asantewaa_expenses_backup_${getTodayString()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function confirmClearData() {
+            if (confirm("Are you sure you want to clear all recorded expenses for Asantewaa?")) {
+                expenses = [];
+                saveExpenses();
+                renderHomeTab();
+                alert("Records reset successfully.");
+            }
+        }
+    </script>
 </body>
 </html>
